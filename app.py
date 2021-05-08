@@ -18,7 +18,7 @@ data_collection = []
 pdfs=os.listdir("static/literature")
 
 for i in pdfs:
-    with open(f"text\\{i[:-4]}.txt","r",encoding="utf-8") as f: 
+    with open(f"text/{i[:-4]}.txt","r",encoding="utf-8") as f: 
         data_collection.append(f.read())
 
 punct = "։֊«»ՙ՚՛՜՝՞,:`"+string.punctuation
