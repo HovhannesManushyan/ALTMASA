@@ -8,16 +8,17 @@ import pdfplumber
 import string
 from nltk.tokenize import RegexpTokenizer
 from gensim import corpora
-from gensim.models import LsiModel
 from gensim import similarities
-
-from gensim.models.ldamodel import LdaModel
+from gensim.models import TfidfModel
 import pyLDAvis.gensim_models
 
 
 data_collection = []
-for i in range(len(os.listdir("static\\literature"))):
-    with open(f"text\\document{i}.txt","r",encoding="utf-8") as f: 
+
+pdfs=os.listdir("static\\literature")
+
+for i in pdfs:
+    with open(f"text\\{i[:-4]}.txt","r",encoding="utf-8") as f: 
         data_collection.append(f.read())
 
 punct = "։֊«»ՙ՚՛՜՝՞,:`"+string.punctuation
@@ -32,20 +33,37 @@ def process(sentence):
 data_collection=[process(i) for i in data_collection]
 dictionary = corpora.Dictionary(data_collection)
 corpus = [dictionary.doc2bow(text) for text in data_collection]
-model = LsiModel(corpus, id2word=dictionary, num_topics=10)
-
+tfidf = TfidfModel(corpus)
 
 app = Flask(__name__,static_folder=os.path.abspath("static/"))
 
+@app.after_request
+def add_header(r):
+    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    r.headers["Pragma"] = "no-cache"
+    r.headers["Expires"] = "0"
+    r.headers['Cache-Control'] = 'public, max-age=0'
+    return r
 
 @app.route("/")
 def handle_index():
     if "message" in request.args:
-        vec_lsi=model[dictionary.doc2bow(process(request.args["message"]))]
-        index = similarities.MatrixSimilarity(model[corpus])
-        sims = index[vec_lsi]
+        tfvec=tfidf[dictionary.doc2bow(process(request.args["message"]))]
+        index = similarities.MatrixSimilarity(tfidf[corpus])
+        sims = index[tfvec]
         sims = sorted(enumerate(sims), key=lambda item: -item[1])
-        return send_from_directory("static\\literature", f"document{sims[0][0]}.pdf")
+        print(sims)
+        if sims[0][1]>0.1:
+            return send_from_directory("static\\literature", pdfs[sims[0][0]])
+        else:
+            print(sims)
+            return send_from_directory("static", "notenough.html")
+    elif "messagenc" in request.args:
+        tfvec=tfidf[dictionary.doc2bow(process(request.args["messagenc"]))]
+        index = similarities.MatrixSimilarity(tfidf[corpus])
+        sims = index[tfvec]
+        sims = sorted(enumerate(sims), key=lambda item: -item[1])
+        return send_from_directory("static\\literature", pdfs[sims[0][0]])
     else:
         return render_template('index.html')
 
