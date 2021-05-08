@@ -9,7 +9,7 @@ import string
 from nltk.tokenize import RegexpTokenizer
 from gensim import corpora
 from gensim import similarities
-from gensim.models import TfidfModel
+from gensim.models import TfidfModel,LdaModel
 import pyLDAvis.gensim_models
 
 
