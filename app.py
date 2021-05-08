@@ -15,7 +15,7 @@ import pyLDAvis.gensim_models
 
 data_collection = []
 
-pdfs=os.listdir("static\\literature")
+pdfs=os.listdir("static/literature")
 
 for i in pdfs:
     with open(f"text\\{i[:-4]}.txt","r",encoding="utf-8") as f: 
@@ -54,7 +54,7 @@ def handle_index():
         sims = sorted(enumerate(sims), key=lambda item: -item[1])
         print(sims)
         if sims[0][1]>0.1:
-            return send_from_directory("static\\literature", pdfs[sims[0][0]])
+            return send_from_directory("static/literature", pdfs[sims[0][0]])
         else:
             print(sims)
             return send_from_directory("static", "notenough.html")
@@ -63,7 +63,7 @@ def handle_index():
         index = similarities.MatrixSimilarity(tfidf[corpus])
         sims = index[tfvec]
         sims = sorted(enumerate(sims), key=lambda item: -item[1])
-        return send_from_directory("static\\literature", pdfs[sims[0][0]])
+        return send_from_directory("static/literature", pdfs[sims[0][0]])
     else:
         return render_template('index.html')
 
